@@ -17,8 +17,6 @@ public class PgLoader<TLoad>(NpgsqlConnection conn)
             return;
         }
 
-        Console.WriteLine($"{DateTime.Now.ToLongTimeString()}: Start Load");
-
         var propData = GetProperties();
         var columns = string.Join(", ", propData.Select(x => x.Name));
         
@@ -65,8 +63,6 @@ public class PgLoader<TLoad>(NpgsqlConnection conn)
             """);
         
         await conn.CloseAsync();
-
-        Console.WriteLine($"{DateTime.Now.ToLongTimeString()}: End Load");
     }
 
     private PropertyData[] GetProperties()

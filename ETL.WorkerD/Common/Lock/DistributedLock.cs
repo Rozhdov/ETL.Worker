@@ -12,13 +12,14 @@ public class DistributedLock(NpgsqlConnection conn) : ILock
         await using var multi = await conn.QueryMultipleAsync(
             """
             UPDATE public.lock_table
-            SET is_running = true
+            SET is_running = true,
+                lock_expiration = current_timestamp + @LockDuration
             WHERE key = @key 
                 AND (is_running = false OR lock_expiration < current_timestamp)
             RETURNING 1;
 
             SELECT change_version FROM public.lock_table WHERE key = @key;
-            """, new { key });
+            """, new { key, LockDuration });
 
         var lockAcquired = await multi.ReadFirstOrDefaultAsync<bool>();
         var changeVersion = await multi.ReadFirstOrDefaultAsync<long>();

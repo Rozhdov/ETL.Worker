@@ -145,7 +145,7 @@ app.MapGet("/db-stats", async (NpgsqlConnection conn) =>
         UNION ALL
         SELECT 'lock_table data:' AS info
         UNION ALL
-        SELECT CONCAT_WS(', ', key, change_version, is_running, lock_expiration) AS info
+        SELECT CONCAT_WS(', ', key, change_version, is_running, to_char(lock_expiration, 'HH24:MI:SS')) AS info
         FROM public.lock_table
         UNION ALL
         SELECT 'source_table1 data:' AS info

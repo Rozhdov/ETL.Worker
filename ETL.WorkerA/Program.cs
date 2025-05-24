@@ -43,6 +43,9 @@ app.MapPost("/prepare/{size:int}", async (int size, NpgsqlConnection conn) =>
     await conn.ExecuteAsync(@"
 drop table if exists public.source_table1 CASCADE;
 drop table if exists public.target_table1 CASCADE;
+drop table if exists public.source_table2 CASCADE;
+drop table if exists public.target_table2 CASCADE;
+drop table if exists public.lock_table cascade;
 
 create table public.source_table1
 (
@@ -77,11 +80,6 @@ app.MapGet("/db-stats", async (NpgsqlConnection conn) =>
         SELECT * FROM (SELECT CONCAT_WS('', schemaname, '.', relname, ' rows: ', n_live_tup, ', inserted: ', n_tup_ins, ', updated: ', n_tup_upd) AS info
         FROM pg_stat_user_tables
         ORDER BY relname)
-        UNION ALL
-        SELECT 'lock_table data:' AS info
-        UNION ALL
-        SELECT CONCAT_WS(', ', key, change_version, is_running, lock_expiration) AS info
-        FROM public.lock_table
         UNION ALL
         SELECT 'source_table1 data:' AS info
         UNION ALL

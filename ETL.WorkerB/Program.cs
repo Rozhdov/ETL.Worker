@@ -1,6 +1,5 @@
 using Dapper;
 using ETL.WorkerB.Common;
-using ETL.WorkerB.Common.Lock;
 using ETL.WorkerB.Extensions;
 using ETL.WorkerB.Implementation.Example;
 using Npgsql;
@@ -48,6 +47,8 @@ app.MapPost("/prepare/{size:int}", async (int size, NpgsqlConnection conn) =>
     await conn.ExecuteAsync(@"
 drop table if exists public.source_table1 CASCADE;
 drop table if exists public.target_table1 CASCADE;
+drop table if exists public.source_table2 CASCADE;
+drop table if exists public.target_table2 CASCADE;
 
 create table public.source_table1
 (
