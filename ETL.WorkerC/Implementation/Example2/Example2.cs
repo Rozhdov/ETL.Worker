@@ -47,9 +47,9 @@ public class ExtractModel
 
 public class LoadModel
 {
-    [UpsertKey]
+    [KeyColumn]
     public required string key1 { get; set; }
-    [UpsertKey]
+    [KeyColumn]
     public required string key2 { get; set; }
     public int? col1 { get; set; }
     public required int col2 { get; set; }

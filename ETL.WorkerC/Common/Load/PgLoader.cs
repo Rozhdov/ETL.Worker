@@ -71,7 +71,7 @@ public class PgLoader<TLoad>(NpgsqlConnection conn)
         return props.Select(x => new PropertyData
         {
             Name = x.Name,
-            IsKey = x.GetCustomAttribute<UpsertKeyAttribute>() is not null,
+            IsKey = x.GetCustomAttribute<KeyColumnAttribute>() is not null,
             GetValue = x.GetValue,
             DbType = x.PropertyType switch
             {
