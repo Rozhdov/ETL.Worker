@@ -1,6 +1,6 @@
 ﻿using ETL.WorkerA.Common.Transform;
 
-namespace ETL.WorkerA.Implementation.Example;
+namespace ETL.WorkerA.Implementation.Example1;
 
 public class ExampleTransformer : ITransformer<ExtractModel, LoadModel>
 {

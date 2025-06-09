@@ -2,7 +2,7 @@
 using ETL.WorkerA.Common.Load;
 using Npgsql;
 
-namespace ETL.WorkerA.Implementation.Example;
+namespace ETL.WorkerA.Implementation.Example1;
 
 public class ExampleLoader(NpgsqlConnection conn): ILoader<LoadModel>
 {

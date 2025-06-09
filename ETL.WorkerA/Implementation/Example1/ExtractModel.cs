@@ -1,6 +1,6 @@
-﻿namespace ETL.WorkerA.Implementation.Example;
+﻿namespace ETL.WorkerA.Implementation.Example1;
 
-public class LoadModel
+public class ExtractModel
 {
     public required long key1 { get; set; }
     public required string col1 { get; set; }

@@ -1,19 +1,20 @@
 ﻿using Dapper;
-using ETL.WorkerB.Common.Extract;
+using ETL.WorkerA.Common.Extract;
 using Npgsql;
 
-namespace ETL.WorkerB.Implementation.Example;
+namespace ETL.WorkerA.Implementation.Example1;
 
 public class ExampleExtractor(NpgsqlConnection conn) : IExtractor<ExtractModel>
 {
-    public IAsyncEnumerable<ExtractModel> ExtractAsync(long changeVersion)
+    public async Task<IReadOnlyCollection<ExtractModel>> ExtractAsync(long changeVersion)
     {
-        return conn.QueryUnbufferedAsync<ExtractModel>(
+        var result = await conn.QueryAsync<ExtractModel>(
             """
             SELECT key1, col1
             FROM public.source_table1
             WHERE key1 > @ChangeVersion
-            ORDER BY key1
             """, new {ChangeVersion = changeVersion});
+
+        return result.ToList();
     }
 }

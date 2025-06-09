@@ -2,7 +2,7 @@ using Dapper;
 using ETL.WorkerA.Common;
 using ETL.WorkerA.Common.Lock;
 using ETL.WorkerA.Extensions;
-using ETL.WorkerA.Implementation.Example;
+using ETL.WorkerA.Implementation.Example1;
 using Npgsql;
 using Scalar.AspNetCore;
 

@@ -1,7 +1,7 @@
 using Dapper;
 using ETL.WorkerB.Common;
 using ETL.WorkerB.Extensions;
-using ETL.WorkerB.Implementation.Example;
+using ETL.WorkerB.Implementation.Example1;
 using Npgsql;
 using Scalar.AspNetCore;
 
