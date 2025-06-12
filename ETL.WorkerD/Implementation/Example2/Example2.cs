@@ -27,7 +27,7 @@ public static class ServiceCollectionExtension
                 x.Copier = new LoadModelCopier();
             })
             .WithChangeVersion(x => x.version)
-            .WithChunkSize(200_000)
+            .WithChunkSize(100_000)
             .Build();
 
         return sc;

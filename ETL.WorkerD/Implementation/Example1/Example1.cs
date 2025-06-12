@@ -27,7 +27,7 @@ public static class ServiceCollectionExtension
                 x.Copier = new ModelCopier();
             })
             .WithChangeVersion(x => x.key1)
-            .WithChunkSize(500_000)
+            .WithChunkSize(200_000)
             .Build();
 
         return sc;
