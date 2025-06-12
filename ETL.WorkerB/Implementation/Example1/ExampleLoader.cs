@@ -5,7 +5,7 @@ using NpgsqlTypes;
 
 namespace ETL.WorkerB.Implementation.Example1;
 
-public class ExampleLoader(NpgsqlConnection conn): ILoader<LoadModel>
+public class ExampleLoader([FromKeyedServices(ConnectionType.Target)] NpgsqlConnection conn): ILoader<LoadModel>
 {
     public async Task LoadAsync(IReadOnlyCollection<LoadModel> collection)
     {

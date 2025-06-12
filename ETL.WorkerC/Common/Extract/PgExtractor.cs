@@ -3,7 +3,7 @@ using Npgsql;
 
 namespace ETL.WorkerC.Common.Extract;
 
-public class PgExtractor<TExtract>(NpgsqlConnection conn)
+public class PgExtractor<TExtract>([FromKeyedServices(ConnectionType.Source)] NpgsqlConnection conn)
     : IExtractor<TExtract>
 {
     public required string Query { get; set; }

@@ -1,4 +1,4 @@
-﻿namespace ETL.WorkerD;
+﻿namespace ETL.WorkerC;
 
 public enum ConnectionType
 {

@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace ETL.WorkerD.Common.Extract;
 
-public class PgExtractor<TExtract>([FromKeyedServices(ConnectionType.Extract)]NpgsqlConnection conn, PgMapper<TExtract> mapper) : IExtractor<TExtract>
+public class PgExtractor<TExtract>([FromKeyedServices(ConnectionType.Source)]NpgsqlConnection conn, PgMapper<TExtract> mapper) : IExtractor<TExtract>
 {
     public required string Query { get; set; }
 

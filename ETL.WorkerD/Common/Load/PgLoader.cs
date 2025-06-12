@@ -4,7 +4,7 @@ using Npgsql;
 
 namespace ETL.WorkerD.Common.Load;
 
-public class PgLoader<TLoad>([FromKeyedServices(ConnectionType.Load)] NpgsqlConnection conn)
+public class PgLoader<TLoad>([FromKeyedServices(ConnectionType.Target)] NpgsqlConnection conn)
     : ILoader<TLoad>
 {
     public required IPgCopier<TLoad> Copier { get; set; }

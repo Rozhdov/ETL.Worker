@@ -3,7 +3,7 @@ using Npgsql;
 
 namespace ETL.WorkerC.Common.Lock;
 
-public class DistributedLock(NpgsqlConnection conn) : ILock
+public class DistributedLock([FromKeyedServices(ConnectionType.Lock)] NpgsqlConnection conn) : ILock
 {
     public async Task<(bool, long)> TryAcquireLockAsync(string key)
     {

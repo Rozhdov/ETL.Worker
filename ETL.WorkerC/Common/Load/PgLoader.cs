@@ -5,7 +5,7 @@ using NpgsqlTypes;
 
 namespace ETL.WorkerC.Common.Load;
 
-public class PgLoader<TLoad>(NpgsqlConnection conn)
+public class PgLoader<TLoad>([FromKeyedServices(ConnectionType.Target)] NpgsqlConnection conn)
     : ILoader<TLoad>
 {
     public required string TableName { get; set; }

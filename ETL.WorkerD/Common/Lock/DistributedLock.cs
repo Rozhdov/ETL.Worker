@@ -3,7 +3,7 @@ using Npgsql;
 
 namespace ETL.WorkerD.Common.Lock;
 
-public class DistributedLock(NpgsqlConnection conn) : ILock
+public class DistributedLock([FromKeyedServices(ConnectionType.Lock)]NpgsqlConnection conn) : ILock
 {
     private static readonly TimeSpan LockDuration = TimeSpan.FromMinutes(10);
     
