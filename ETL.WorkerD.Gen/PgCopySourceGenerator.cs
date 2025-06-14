@@ -98,8 +98,8 @@ public interface {InterfaceName}<T>
     /// <summary>
     /// Extract class and property info from syntactic and semantic models. 
     /// </summary>
-    /// <param name="symbol">Semantic class info</param>
-    /// <param name="classNode">Syntactic class info</param>
+    /// <param name="symbol">Semantic model, which explains what does this syntax means within current context</param>
+    /// <param name="classNode">Syntax model with syntactic and lexical info</param>
     /// <param name="attributeData">[PgLoadModel] attribute data</param>
     /// <returns></returns>
     private static ModelInfo Transform(INamedTypeSymbol symbol, ClassDeclarationSyntax classNode, ImmutableArray<AttributeData> attributeData)

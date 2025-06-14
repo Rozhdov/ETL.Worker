@@ -103,8 +103,7 @@ app.MapPost("/prepare/{size:int}", async (int size,
         );
         
         insert into public.lock_table(key, change_version, is_running)
-        values ('Example1', 0, false),
-               ('Example2', 0, false);
+        values ('Example1', 0, false);
         """);
 });
 
