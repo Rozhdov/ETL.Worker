@@ -1,6 +1,6 @@
 using Dapper;
 using ETL.WorkerD;
-using ETL.WorkerD.Common;
+using ETL.WorkerD.Common.Processor;
 using ETL.WorkerD.Extensions;
 using ETL.WorkerD.Implementation.Example1;
 using ETL.WorkerD.Implementation.Example2;
@@ -27,9 +27,10 @@ var app = builder.Build();
 app.MapOpenApi();
 app.MapScalarApiReference();
 
-app.MapPost("/etl/{key}/process", async (string key, Etl etl, CancellationToken ct) =>
+app.MapPost("/etl/{key}/process", async (string key, IServiceProvider sp, CancellationToken ct) =>
 {
-    await etl.ProcessAsync(key, ct);
+    var processor = sp.GetRequiredKeyedService<IProcessor>(key);
+    await processor.ProcessAsync(ct);
 });
 
 app.MapPatch("/etl/{key}/resetLock", async (string key, [FromKeyedServices(ConnectionType.Lock)] NpgsqlConnection conn) =>
@@ -51,8 +52,8 @@ app.MapPost("/prepare/{size:int}", async (int size,
 {
     await eConn.ExecuteAsync(
         """
-        drop table if exists public.source_table1 CASCADE;
-
+        drop table if exists public.source_table1 cascade;
+        
         create table public.source_table1
         (
             key1 bigint generated always as identity
@@ -60,47 +61,47 @@ app.MapPost("/prepare/{size:int}", async (int size,
                     primary key,
             col1 varchar(1024) not null
         );
-
+        
         alter table public.source_table1
             owner to postgres;
-
+        
         insert into source_table1(col1)
-        select md5(random()::text)
+        select repeat(md5(random()::text), 10)
         from generate_series(1,@size) id;
-
-        drop table if exists public.source_table2 CASCADE;
-
+        
+        drop table if exists public.source_table2 cascade;
+        
         create table public.source_table2
         (
             version bigint generated always as identity,
-            key1 varchar(1024) not null,
-            key2 varchar(1024) not null,
+            key1 char(32) not null,
+            key2 char(32) not null,
             col1 integer,
             col2 integer not null,
             col3 varchar(1024),
             col4 timestamp not null,
             col5 timestamp,
-            PRIMARY KEY(version)
+            primary key(version)
         );
-
+        
         alter table public.source_table2
             owner to postgres;
-
+        
         insert into source_table2(key1, key2, col1, col2, col3, col4, col5)
         select md5(random(0, 1000)::text),
                md5(random(0, 1000)::text),
-               NULLIF(random(0, 100), 50),
+               nullif(random(0, 100), 50),
                random(0, 100),
-               md5(random(0, 1000)::text),
-               CURRENT_TIMESTAMP,
-               CURRENT_TIMESTAMP
+               repeat(md5(random()::text), 10),
+               current_timestamp - (random(1, 365) * interval '1 day'),
+               case when random(0, 100) > 80 then current_timestamp else null end
         from generate_series(1,@size) id;
         """, new { size }, commandTimeout: 120);
 
     await lConn.ExecuteAsync(
         """
         drop table if exists public.target_table1 CASCADE;
-
+        
         create table public.target_table1
         (
             key1 bigint constraint target_table1_pk
@@ -110,13 +111,13 @@ app.MapPost("/prepare/{size:int}", async (int size,
         
         alter table public.target_table1
             owner to postgres;
-
+        
         drop table if exists public.target_table2 CASCADE;
-
+        
         create table public.target_table2
         (
-            key1 varchar(1024) not null,
-            key2 varchar(1024) not null,
+            key1 char(32) not null,
+            key2 char(32) not null,
             col1 integer,
             col2 integer not null,
             col3 varchar(1024),

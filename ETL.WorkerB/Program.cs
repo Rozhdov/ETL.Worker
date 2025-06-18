@@ -1,6 +1,6 @@
 using Dapper;
 using ETL.WorkerB;
-using ETL.WorkerB.Common;
+using ETL.WorkerB.Common.Processor;
 using ETL.WorkerB.Extensions;
 using ETL.WorkerB.Implementation.Example1;
 using Npgsql;
@@ -18,22 +18,17 @@ builder.Services.AddNpgsqlDataSource(
 builder.Services.AddOpenApi();
 
 builder.Services.AddEtl();
-
-builder.Services.AddEtlProcess<ExtractModel, LoadModel>("Example1")
-    .WithExtractor<ExampleExtractor>()
-    .WithTransformer<ExampleTransformer>()
-    .WithLoader<ExampleLoader>()
-    .WithChangeVersion(x => x.key1)
-    .Build();
+builder.Services.AddExample1();
 
 var app = builder.Build();
 
 app.MapOpenApi();
 app.MapScalarApiReference();
 
-app.MapPost("/etl/{key}/process", async (string key, Etl etl) =>
+app.MapPost("/etl/{key}/process", async (string key, IServiceProvider sp) =>
 {
-    await etl.ProcessAsync(key);
+    var processor = sp.GetRequiredKeyedService<IProcessor>(key);
+    await processor.ProcessAsync();
 });
 
 app.MapPatch("/etl/{key}/resetLock", async (string key, [FromKeyedServices(ConnectionType.Lock)] NpgsqlConnection conn) =>
@@ -68,7 +63,7 @@ app.MapPost("/prepare/{size:int}", async (int size,
             owner to postgres;
 
         insert into source_table1(col1)
-        select md5(random()::text)
+        select repeat(md5(random()::text), 10)
         from generate_series(1,@size) id;
 
         drop table if exists public.source_table2 CASCADE;

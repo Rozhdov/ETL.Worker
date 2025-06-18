@@ -33,7 +33,7 @@ public class PgCopyBenchmark
             key2 = Guid.NewGuid().ToString(),
             col1 = _rnd.Next(),
             col2 = _rnd.Next(),
-            col3 = Guid.NewGuid().ToString(),
+            col3 = string.Concat(Enumerable.Repeat(Guid.NewGuid().ToString(), 10)),
             col4 = DateTime.Now,
             col5 = DateTime.Now
         }).ToArray();

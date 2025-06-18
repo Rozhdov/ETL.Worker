@@ -1,5 +1,4 @@
 ﻿using ETL.WorkerD.Builder;
-using ETL.WorkerD.Common;
 using ETL.WorkerD.Common.Extract;
 using ETL.WorkerD.Common.Lock;
 
@@ -9,7 +8,6 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddEtl(this IServiceCollection sc)
     {
-        sc.AddScoped<Etl>();
         sc.AddScoped<ILock, DistributedLock>();
         sc.AddSingleton(typeof(PgMapper<>));
         return sc;
