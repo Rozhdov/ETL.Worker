@@ -1,8 +1,8 @@
-﻿using ETL.WorkerA.Common.Transform;
+﻿using ETL.WorkerB.Common.Transform;
 
-namespace ETL.WorkerA.Implementation.Example1;
+namespace ETL.WorkerB.Implementation.Example1;
 
-public class ExampleTransformer : ITransformer<ExtractModel, LoadModel>
+public class Transformer : ITransformer<ExtractModel, LoadModel>
 {
     public IReadOnlyCollection<LoadModel> Transform(IReadOnlyCollection<ExtractModel> collection)
     {

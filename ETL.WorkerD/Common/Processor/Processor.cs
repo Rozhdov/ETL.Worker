@@ -18,7 +18,8 @@ public class Processor<TExtract, TLoad>(
 {
     public async Task ProcessAsync(CancellationToken ct)
     {
-        var (lockAcquired, changeVersion) = await @lock.TryAcquireLockAsync(key);
+        var executionKey = Guid.NewGuid();
+        var (lockAcquired, changeVersion) = await @lock.TryAcquireLockAsync(key, executionKey);
         if (!lockAcquired)
         {
             return;
@@ -40,7 +41,7 @@ public class Processor<TExtract, TLoad>(
                 // Update lock change version after we loaded data in previous iteration.
                 // Do nothing on first iteration. 
                 var lockTask = newChangeVersion > changeVersion ?
-                    @lock.UpdateLockAsync(key, newChangeVersion) : Task.CompletedTask;
+                    @lock.UpdateLockAsync(key, newChangeVersion, executionKey) : Task.CompletedTask;
 
                 var eColl = sourceEnumerator.Current;
                 newChangeVersion = eColl.Max(changeVersionSelector);
@@ -54,11 +55,11 @@ public class Processor<TExtract, TLoad>(
                 movedNext = eTask.Result;
             } while (movedNext);
 
-            await @lock.UpdateLockAsync(key, newChangeVersion);
+            await @lock.UpdateLockAsync(key, newChangeVersion, executionKey);
         }
         finally
         {
-            await @lock.ReleaseLockAsync(key);
+            await @lock.ReleaseLockAsync(key, executionKey);
         }
     }
 }

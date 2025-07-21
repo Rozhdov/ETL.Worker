@@ -4,7 +4,7 @@ using Npgsql;
 
 namespace ETL.WorkerA.Implementation.Example1;
 
-public class ExampleExtractor([FromKeyedServices(ConnectionType.Source)] NpgsqlConnection conn) : IExtractor<ExtractModel>
+public class Extractor([FromKeyedServices(ConnectionType.Source)] NpgsqlConnection conn) : IExtractor<ExtractModel>
 {
     public async Task<IReadOnlyCollection<ExtractModel>> ExtractAsync(long changeVersion)
     {

@@ -137,14 +137,15 @@ app.MapPost("/prepare/{size:int}", async (int size,
         create table public.lock_table
         (
             key varchar(1024) not null primary key,
+            execution_key uuid null,
             change_version bigint not null,
             is_running boolean not null,
             lock_expiration timestamp with time zone null
         );
         
-        insert into public.lock_table(key, change_version, is_running, lock_expiration)
-        values ('Example1', 0, false, null),
-               ('Example2', 0, false, null);
+        insert into public.lock_table(key, change_version, is_running)
+        values ('Example1', 0, false),
+               ('Example2', 0, false);
         """);
 });
 
@@ -187,7 +188,7 @@ app.MapGet("/db-stats", async ([FromKeyedServices(ConnectionType.Source)] Npgsql
         UNION ALL
         SELECT 'lock_table data:' AS info
         UNION ALL
-        SELECT CONCAT_WS(', ', key, change_version, is_running, to_char(lock_expiration, 'HH24:MI:SS')) AS info
+        SELECT CONCAT_WS(', ', key, execution_key, change_version, is_running, to_char(lock_expiration, 'HH24:MI:SS')) AS info
         FROM public.lock_table)
         """);
 
