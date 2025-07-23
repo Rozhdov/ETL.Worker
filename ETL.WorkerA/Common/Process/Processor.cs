@@ -16,7 +16,8 @@ public class Processor<TExtract, TLoad>(
 {
     public async Task ProcessAsync()
     {
-        if (!@lock.TryAcquireLock(key, out var changeVersion))
+        var (lockAcquired, changeVersion) = await @lock.TryAcquireLockAsync(key);
+        if (!lockAcquired)
         {
             return;
         }
@@ -31,7 +32,7 @@ public class Processor<TExtract, TLoad>(
         var tColl = transformer.Transform(eColl);
         await loader.LoadAsync(tColl);
         
-        @lock.UpdateLock(key, changeVersion);
-        @lock.ReleaseLock(key);
+        await @lock.UpdateLockAsync(key, changeVersion);
+        await @lock.ReleaseLockAsync(key);
     }
 }

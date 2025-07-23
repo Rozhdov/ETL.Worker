@@ -1,41 +1,45 @@
-﻿using System.Collections.Concurrent;
+﻿using Dapper;
+using Npgsql;
 
 namespace ETL.WorkerA.Common.Lock;
 
-public class ExampleLock : ILock
+public class DistributedLock([FromKeyedServices(ConnectionType.Lock)] NpgsqlConnection conn) : ILock
 {
-    private readonly ConcurrentDictionary<string, (bool isRunning, long changeVersion)> _lock = new()
+    public async Task<(bool, long)> TryAcquireLockAsync(string key)
     {
-        ["Example1"] = (false, 0)
-    };
-        
-    public bool TryAcquireLock(string key, out long changeVersion)
-    {
-        var state = _lock[key];
-        if (state.isRunning)
-        {
-            changeVersion = default;
-            return false;
-        }
+        await using var multi = await conn.QueryMultipleAsync(
+            """
+            UPDATE public.lock_table
+            SET is_running = true
+            WHERE key = @key AND is_running = false
+            RETURNING 1;
 
-        var lockAcquired = _lock.TryUpdate(key, state with { isRunning = true }, state);
-        if (lockAcquired)
-        {
-            changeVersion = state.changeVersion;
-            return true;
-        }
-        
-        changeVersion = default;
-        return false;
+            SELECT change_version FROM public.lock_table WHERE key = @key;
+            """, new { key });
+
+        var lockAcquired = await multi.ReadFirstOrDefaultAsync<bool>();
+        var changeVersion = await multi.ReadFirstOrDefaultAsync<long>();
+
+        return (lockAcquired, changeVersion);
     }
-    
-    public void UpdateLock(string key, long changeVersion)
+
+    public async Task UpdateLockAsync(string key, long changeVersion)
     {
-        _lock[key] = (true, changeVersion);
+        await conn.ExecuteAsync(
+            """
+            UPDATE public.lock_table
+            SET change_version = @changeVersion
+            WHERE key = @key
+            """, new { key, changeVersion });
     }
-    
-    public void ReleaseLock(string key)
+
+    public async Task ReleaseLockAsync(string key)
     {
-        _lock[key] = _lock[key] with { isRunning = false };
+        await conn.ExecuteAsync(
+            """
+            UPDATE public.lock_table
+            SET is_running = false
+            WHERE key = @key
+            """, new { key });
     }
 }

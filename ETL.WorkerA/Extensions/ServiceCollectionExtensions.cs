@@ -7,7 +7,7 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddEtl(this IServiceCollection sc)
     {
-        sc.AddSingleton<ILock, ExampleLock>();
+        sc.AddSingleton<ILock, DistributedLock>();
         return sc;
     }
     

@@ -10,6 +10,8 @@ using Scalar.AspNetCore;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddNpgsqlDataSource(
+    builder.Configuration.GetValue<string>("PostgresLockConnection")!, serviceKey: ConnectionType.Lock);
+builder.Services.AddNpgsqlDataSource(
     builder.Configuration.GetValue<string>("PostgresSourceConnection")!, serviceKey: ConnectionType.Source);
 builder.Services.AddNpgsqlDataSource(
     builder.Configuration.GetValue<string>("PostgresTargetConnection")!, serviceKey: ConnectionType.Target);
@@ -30,15 +32,16 @@ app.MapPost("/etl/{key}/process", async (string key, IServiceProvider sp) =>
     await processor.ProcessAsync();
 });
 
-app.MapPost("/etl/{key}/resetLock", (string key, ILock @lock) =>
+app.MapPost("/etl/{key}/resetLock", async (string key, ILock @lock) =>
 {
-    @lock.UpdateLock(key, 0);
-    @lock.ReleaseLock(key);
+    await @lock.UpdateLockAsync(key, 0);
+    await @lock.ReleaseLockAsync(key);
 });
 
 app.MapPost("/prepare/{size:int}", async (int size,
     [FromKeyedServices(ConnectionType.Source)] NpgsqlConnection eConn,
-    [FromKeyedServices(ConnectionType.Target)] NpgsqlConnection lConn) =>
+    [FromKeyedServices(ConnectionType.Target)] NpgsqlConnection lConn,
+    [FromKeyedServices(ConnectionType.Lock)] NpgsqlConnection lockConn) =>
 {
     await eConn.ExecuteAsync(
         """
@@ -78,10 +81,26 @@ app.MapPost("/prepare/{size:int}", async (int size,
 
         drop table if exists public.target_table2 CASCADE;
         """);
+
+    await lockConn.ExecuteAsync(
+    """
+        drop table if exists public.lock_table cascade;
+        
+        create table public.lock_table
+        (
+            key varchar(1024) not null primary key,
+            change_version bigint not null,
+            is_running boolean not null
+        );
+        
+        insert into public.lock_table(key, change_version, is_running)
+        values ('Example1', 0, false);
+        """);
 });
 
 app.MapGet("/db-stats", async ([FromKeyedServices(ConnectionType.Source)] NpgsqlConnection eConn,
-    [FromKeyedServices(ConnectionType.Target)] NpgsqlConnection lConn) =>
+    [FromKeyedServices(ConnectionType.Target)] NpgsqlConnection lConn,
+    [FromKeyedServices(ConnectionType.Lock)] NpgsqlConnection lockConn) =>
 {
     var eRes = await eConn.QueryAsync<string>(
         """
@@ -103,7 +122,18 @@ app.MapGet("/db-stats", async ([FromKeyedServices(ConnectionType.Source)] Npgsql
         SELECT * FROM (SELECT CONCAT_WS(', ', key1, col1) AS info FROM public.target_table1 ORDER BY key1 DESC LIMIT 5))
         """);
 
-    return TypedResults.Ok(eRes.Append("------------").Concat(lRes));
+    var lockRes = await lockConn.QueryAsync<string>(
+        """
+        SELECT * FROM (SELECT CONCAT_WS('', schemaname, '.', relname, ' rows: ', n_live_tup, ', inserted: ', n_tup_ins, ', updated: ', n_tup_upd) AS info
+        FROM pg_stat_user_tables
+        UNION ALL
+        SELECT 'lock_table data:' AS info
+        UNION ALL
+        SELECT CONCAT_WS(', ', key, change_version, is_running) AS info
+        FROM public.lock_table)
+        """);
+
+    return TypedResults.Ok(eRes.Append("------------").Concat(lRes).Append("------------").Concat(lockRes));
 });
 
 app.Run();

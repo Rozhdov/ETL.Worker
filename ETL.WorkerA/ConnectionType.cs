@@ -3,5 +3,6 @@
 public enum ConnectionType
 {
     Source,
-    Target
+    Target,
+    Lock
 }

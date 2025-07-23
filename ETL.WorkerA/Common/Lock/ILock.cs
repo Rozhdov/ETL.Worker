@@ -2,7 +2,7 @@
 
 public interface ILock
 {
-    bool TryAcquireLock(string key, out long changeVersion);
-    void UpdateLock(string key, long changeVersion);
-    void ReleaseLock(string key);
+    Task<(bool, long)> TryAcquireLockAsync(string key);
+    Task UpdateLockAsync(string key, long changeVersion);
+    Task ReleaseLockAsync(string key);
 }

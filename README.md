@@ -8,7 +8,7 @@ This repository contains code that supplements my SoftServe Engineering Communit
 
 **ETL.WorkerA** contains basic naive worker implementation.
 
-**ETL.WorkerB** has performance and locking improvements.
+**ETL.WorkerB** has performance and memory consumption improvements.
 
 In **ETL.WorkerC** we improved throughput, and made worker easier to extend with additional processes.
 
